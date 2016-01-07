@@ -1,0 +1,53 @@
+- name: Copy postgresql.list
+  template: src=../templates/postgresql.list dest=/etc/apt/sources.list.d/postgresql.list
+
+- name: Get the postgres package key
+  sudo: true
+  action: shell wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+
+- name: Ensure apt cache is up to date
+  apt: update_cache=yes #cache_valid_time=86400
+
+- name: Ensure required packages are installed
+  sudo: true
+  apt: name={{item}}
+  with_items:
+      - python-psycopg2
+      - postgresql-client-9.4
+      - postgresql-common 
+      - postgresql-9.4-postgis-2.1
+
+- name: Trusted connections
+  lineinfile:
+    dest: /etc/postgresql/9.4/main/pg_hba.conf
+    line: "{{ item }}"
+  with_items:
+    - "{{pg_hba_additions}}"
+
+- name: Open up Postgres via config settings all and restart
+  lineinfile: dest=/etc/postgresql/9.4/main/postgresql.conf line="listen_addresses = '*'"
+  when: pg_listen_* == true
+  notify: restart postgresql
+
+- name: Change postgres user password
+  sudo: true
+  sudo_user: postgres
+  command: psql -U postgres -c "ALTER USER postgres with password '{{postgres_user_password}}';"
+
+- name: Ensure template_postgis database exists
+  sudo_user: postgres
+  postgresql_db: name=template_postgis state=present
+  register: createdb_template_postgis
+
+- name: Make template_postgis a template
+  sudo_user: postgres
+  command: psql -d template_postgis -c "UPDATE pg_database SET datistemplate=true WHERE datname='template_postgis';"
+  when: createdb_template_postgis.changed
+
+- name: Enable postgis extension 
+  sudo_user: postgres
+  command: psql -d template_postgis -c "CREATE EXTENSION postgis;"
+  when: createdb_template_postgis.changed
+
+- name: Create a directory for the postgres user 
+  file: path=/home/postgres state=directory owner=postgres
