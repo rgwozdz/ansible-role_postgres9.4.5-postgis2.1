@@ -1,2 +1,2 @@
-pg_listen_*: false
+pg_listen_all: false
 postgres_user_password:
