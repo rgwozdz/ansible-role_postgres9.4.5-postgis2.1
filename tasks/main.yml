@@ -26,7 +26,7 @@
 
 - name: Open up Postgres via config settings all and restart
   lineinfile: dest=/etc/postgresql/9.4/main/postgresql.conf line="listen_addresses = '*'"
-  when: pg_listen_* == true
+  when: "{{pg_listen_all}} == True"
   notify: restart postgresql
 
 - name: Change postgres user password
