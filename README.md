@@ -2,11 +2,12 @@
 Ansible role for installation of PostgreSQL 9.4.5 and PostGIS 2.1 on Ubuntu 14.04
 
 ###Variables
-|variable | required | default |description|
-|-|-|-|-|
+|variable|required|default|description|
+|---|---|---|---|
 |postgres_user_password|no||password to set for postgres user|
 |pg_hba_additions|no||any trusted connections to add in pg_hba.conf file|
-|pg_listen_*|no| False| add listen_addresses="*"  to postgresql.conf?|
+|pg_listen_all|no| False| add listen_addresses="*"  to postgresql.conf?|
+
   
 <br />
 
