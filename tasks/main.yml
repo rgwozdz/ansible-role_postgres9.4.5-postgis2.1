@@ -54,3 +54,6 @@
 
 - name: Create a directory for the postgres user 
   file: path=/home/postgres state=directory owner=postgres
+
+- name: restart postgres
+  shell: service postgresql restart
